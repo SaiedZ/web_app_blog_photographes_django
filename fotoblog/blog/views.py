@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from django.forms import formset_factory
 from . import models
@@ -7,6 +7,7 @@ from .import forms
 
 
 @login_required
+@permission_required('blog.add_photo', raise_exception=True)
 def photo_upload(request):
     form = forms.PhotoForm()
     if request.method == 'POST':
@@ -23,12 +24,13 @@ def photo_upload(request):
 
 @login_required
 def home(request):
-    # photos = models.Photo.objects.all()
+    photos = models.Photo.objects.all()
     blogs = models.Blog.objects.all()
-    return render(request, 'blog/home.html', context={'blogs': blogs}) # context={'photos': photos, 'blogs': blogs})
+    return render(request, 'blog/home.html', context={'photos': photos, 'blogs': blogs})
 
 
 @login_required
+@permission_required(['blog.add_photo', 'blog.add_blog'], raise_exception=True)
 def blog_and_photo_upload(request):
     blog_form = forms.BlogForm()
     photo_form = forms.PhotoForm()
@@ -40,9 +42,9 @@ def blog_and_photo_upload(request):
             photo.uploader = request.user
             photo.save()
             blog = blog_form.save(commit=False)
-            blog.author = request.user
             blog.photo = photo
             blog.save()
+            blog.contributors.add(request.user, through_defaults={'contribution': 'Auteur principal'})
             return redirect('home')
     context = {
         'blog_form': blog_form,
@@ -58,6 +60,7 @@ def view_blog(request, blog_id):
 
 
 @login_required
+@permission_required('blog.change_blog', raise_exception=True)
 def edit_blog(request, blog_id):
 
     blog = get_object_or_404(models.Blog, id=blog_id)
@@ -83,6 +86,7 @@ def edit_blog(request, blog_id):
 
 
 @login_required
+@permission_required('blog.add_photo', raise_exception=True)
 def create_multiple_photos(request):
     PhotoFormSet = formset_factory(forms.PhotoForm, extra=5)
     formset = PhotoFormSet()
@@ -96,3 +100,14 @@ def create_multiple_photos(request):
                     photo.save()
             return redirect('home')
     return render(request, 'blog/create_multiple_photos.html', {'formset': formset})
+
+
+@login_required
+def follow_users(request):
+    form = forms.FollowUsersForm(instance=request.user)
+    if request.method == 'POST':
+        form = forms.FollowUsersForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    return render(request, 'blog/follow_users_form.html', context={'form': form})

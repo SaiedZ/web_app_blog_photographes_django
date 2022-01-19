@@ -29,3 +29,15 @@ class FollowUsersForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['follows']
+
+
+class ChooseForm(forms.Form):
+
+    def __init__(self, user, *args, **kwargs):
+        super(ChooseForm, self).__init__(*args, **kwargs)
+        self.fields['follows'].queryset = User.objects.exclude(user).filter(user__role='CREATOR')
+
+    q_set = User.objects.all()
+
+    follows = forms.ModelMultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple, queryset=q_set)

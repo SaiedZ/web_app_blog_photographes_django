@@ -147,3 +147,15 @@ def follow_users(request):
             form.save()
             return redirect('home')
     return render(request, 'blog/follow_users_form.html', context={'form': form})
+
+
+"""@login_required
+def follow_users(request):
+    form = forms.ChooseForm(request.user.id, data=request.POST or None)
+    if request.POST and form.is_valid():
+        current_user = request.user
+        current_user.follows = form.cleaned_data['follows']
+        current_user.save()
+        return redirect('home')
+    else:
+        return render(request, 'blog/follow_users_form.html', {'form': form})"""

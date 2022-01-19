@@ -25,6 +25,8 @@ User = get_user_model()
 
 
 class FollowUsersForm(forms.ModelForm):
+
     class Meta:
         model = User
         fields = ['follows']
+        fields.choices = User.objects.exclude(user = request.user)

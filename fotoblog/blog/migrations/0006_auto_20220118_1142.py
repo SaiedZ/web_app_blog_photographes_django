@@ -16,7 +16,8 @@ def migrate_from_author_to_contibutors(apps, schema_migration):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blog', '0005_blogcontributor_blog_contributors_alter_blog_author_and_more'),
+        ('blog',
+         '0005_blogcontributor_blog_contributors_alter_blog_author_and_more'),
     ]
 
     operations = [
